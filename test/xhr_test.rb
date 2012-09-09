@@ -1,5 +1,4 @@
-require File.join(File.dirname(__FILE__), *%w[test_helper])
-require 'harmony'
+require File.expand_path('../test_helper', __FILE__)
 
 class XhrTest < JavascriptFeatures::TestCase
 
@@ -18,16 +17,22 @@ class XhrTest < JavascriptFeatures::TestCase
   end
 
   should 'initialise the feature required by the XHR content' do
-    assert_match(/touched-by-load/, execute_js('jQuery(".real.xhr-response").attr("class")'))
+    should_pass_within 10 do
+      assert_match(/touched-by-load/, execute_js('jQuery(".real.xhr-response").attr("class")'))
+    end
   end
 
   should 'limit the scope of the feature required by the XHR content to the XHR content itself' do
-    assert_no_match(/touched-by-load/, execute_js('jQuery(".unrelated.xhr-response").attr("class")'))
+    should_pass_within 10 do
+      assert_no_match(/touched-by-load/, execute_js('jQuery(".unrelated.xhr-response").attr("class")'))
+    end
   end
 
   should 're-run global initialisation code when the XHR completes, limited to the scope of the XHR content' do
-    assert_selector_count 1, '.real.xhr-response .touched-by-global-init'
-    assert_selector_count 1, '.unrelated.xhr-response .touched-by-global-init'
+    should_pass_within 10 do
+      assert_selector_count 1, '.real.xhr-response .touched-by-global-init'
+      assert_selector_count 1, '.unrelated.xhr-response .touched-by-global-init'
+    end
   end
 
 end

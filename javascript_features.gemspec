@@ -14,9 +14,8 @@ Gem::Specification.new do |s|
 
   s.add_dependency('jsmin')
 
-  s.add_development_dependency('harmony')
+  s.add_development_dependency('capybara-webkit')
   s.add_development_dependency('shoulda')
-  s.add_development_dependency('redgreen')
   s.add_development_dependency('rack-test')
   s.add_development_dependency('jslint_on_rails')
   s.add_development_dependency('activesupport')

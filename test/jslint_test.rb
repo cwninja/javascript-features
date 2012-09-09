@@ -1,4 +1,4 @@
-require File.join(File.dirname(__FILE__), *%w[test_helper])
+require File.expand_path('../test_helper', __FILE__)
 require 'jslint'
 
 class JslintTest < Test::Unit::TestCase

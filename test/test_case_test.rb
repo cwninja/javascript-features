@@ -1,4 +1,4 @@
-require File.join(File.dirname(__FILE__), *%w[test_helper])
+require File.expand_path('../test_helper', __FILE__)
 
 class TestCaseTest < JavascriptFeatures::TestCase
   uses_html_body{ '<div class="foo"></div>' }
@@ -15,12 +15,8 @@ class TestCaseTest < JavascriptFeatures::TestCase
     assert_match %r{<body class="with-js-testcase">}, @html
   end
 
-  should 'create a Harmony::Page for the HTML' do
-    assert_not_nil @page
-  end
-
   should 'load the JavaScript in the Harmony::Page' do
-    assert_equal 'object', @page.execute_js('typeof Features')
+    assert_equal 'object', execute_js('typeof Features')
   end
 
   should 'provide a method of executing JS without knowing about the @page variable' do
@@ -29,7 +25,8 @@ class TestCaseTest < JavascriptFeatures::TestCase
 
   should 'provide a custom assertion for counting DOM nodes' do
     assert_nothing_raised{ assert_selector_count(1, 'div.foo') }
-    assert_raises(Test::Unit::AssertionFailedError){ assert_selector_count(2, 'div.foo') }
+    exception = defined?(MiniTest::Assertion) ? MiniTest::Assertion : Test::Unit::AssertionFailedError
+    assert_raises(exception){ assert_selector_count(2, 'div.foo') }
   end
 
 end

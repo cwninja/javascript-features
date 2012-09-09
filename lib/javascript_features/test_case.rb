@@ -1,13 +1,11 @@
 require 'active_support/test_case'
 
-begin
-  require 'harmony'
-rescue LoadError
-  raise 'You must gem install harmony to use javascript-features test case'
-end
+require 'capybara-webkit'
+require 'capybara/dsl'
 
 module JavascriptFeatures
   class TestCase < ::ActiveSupport::TestCase
+    include Capybara::DSL
     extend JavascriptFeatures::Helper
 
     autoload :Servlet, 'javascript_features/test_case/servlet'
@@ -55,8 +53,7 @@ module JavascriptFeatures
           @server.mount('/', JavascriptFeatures::TestCase::Servlet, pages)
           Thread.new{ @server.start }
 
-          @page = Harmony::Page.fetch("http://#{server_config[:BindAddress]}:#{server_config[:Port]}/index.html")
-          Harmony::Page::Window::BASE_RUNTIME.wait
+          visit "http://#{server_config[:BindAddress]}:#{server_config[:Port]}/index.html"
         end
 
         define_method(:teardown) do
@@ -85,12 +82,37 @@ module JavascriptFeatures
     end
 
     def execute_js(*args)
-      @page.execute_js(*args)
+      visit 'about:blank' unless page
+      page.evaluate_script(*args)
+    end
+
+    def should_pass_within(count = 10)
+      timeout = Time.now + count
+      begin
+        yield
+      rescue Object
+        if timeout < Time.now
+          raise
+        else
+          sleep 0.01
+          retry
+        end
+      end
     end
 
     def assert_selector_count(expected_count, selector)
-      real_count = execute_js("jQuery(#{selector.to_json}).length")
-      assert_equal expected_count, real_count, "Expected #{expected_count} elements matching selector #{selector}, found #{real_count}"
+      should_pass_within do
+        real_count = execute_js("jQuery(#{selector.to_json}).length")
+        assert_equal expected_count, real_count, "Expected #{expected_count} elements matching selector #{selector}, found #{real_count}"
+      end
+    end
+
+    setup do
+      @old_current_driver = Capybara.current_driver
+      Capybara.current_driver = :webkit
+    end
+    teardown do
+      Capybara.current_driver = @old_current_driver
     end
   end
 end
